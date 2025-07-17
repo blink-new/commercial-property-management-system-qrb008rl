@@ -152,6 +152,8 @@ export function DataProvider({ children }: DataProviderProps) {
   const archiveProperty = (id: string) => {
     updateProperty(id, { isArchived: true })
     toast.success('Property archived')
+    // Recalculate property occupancy after archiving using setTimeout to ensure state is updated
+    setTimeout(() => recalculatePropertyOccupancy(id), 0)
   }
 
   const restoreProperty = (id: string) => {
@@ -163,11 +165,15 @@ export function DataProvider({ children }: DataProviderProps) {
       updateProperty(id, { isArchived: false })
       toast.success('Property restored from archive')
     }
+    // Recalculate property occupancy after restoration using setTimeout to ensure state is updated
+    setTimeout(() => recalculatePropertyOccupancy(id), 0)
   }
 
   const softDeleteProperty = (id: string) => {
     updateProperty(id, { isDeleted: true, deletedAt: getCurrentTimestamp() })
     toast.success('Property moved to recycle bin')
+    // Recalculate property occupancy after soft deletion using setTimeout to ensure state is updated
+    setTimeout(() => recalculatePropertyOccupancy(id), 0)
   }
 
   const deleteProperty = (id: string) => {
@@ -193,28 +199,36 @@ export function DataProvider({ children }: DataProviderProps) {
     }
     setUnits(prev => [...prev, newUnit])
     
-    // Update property total units count
-    setProperties(prev => prev.map(property => 
-      property.id === unitData.propertyId
-        ? { ...property, totalUnits: property.totalUnits + 1, updatedAt: getCurrentTimestamp() }
-        : property
-    ))
-    
     toast.success('Unit created successfully')
+    
+    // Recalculate property occupancy after adding unit using setTimeout to ensure state is updated
+    setTimeout(() => recalculatePropertyOccupancy(unitData.propertyId), 0)
   }
 
   const updateUnit = (id: string, updates: Partial<Unit>) => {
+    const unit = units.find(u => u.id === id)
     setUnits(prev => prev.map(unit => 
       unit.id === id 
         ? { ...unit, ...updates, updatedAt: getCurrentTimestamp() }
         : unit
     ))
     toast.success('Unit updated successfully')
+    
+    // If status was updated, recalculate property occupancy
+    if (updates.status && unit) {
+      setTimeout(() => recalculatePropertyOccupancy(unit.propertyId), 0)
+    }
   }
 
   const archiveUnit = (id: string) => {
+    const unit = units.find(u => u.id === id)
     updateUnit(id, { isArchived: true })
     toast.success('Unit archived')
+    
+    // Recalculate property occupancy after archiving unit
+    if (unit) {
+      setTimeout(() => recalculatePropertyOccupancy(unit.propertyId), 0)
+    }
   }
 
   const restoreUnit = (id: string) => {
@@ -250,13 +264,10 @@ export function DataProvider({ children }: DataProviderProps) {
       setUnits(prev => prev.filter(u => u.id !== id))
       // Delete associated tenancies
       setTenancies(prev => prev.filter(tenancy => tenancy.unitId !== id))
-      // Update property total units count
-      setProperties(prev => prev.map(property => 
-        property.id === unit.propertyId
-          ? { ...property, totalUnits: Math.max(0, property.totalUnits - 1), updatedAt: getCurrentTimestamp() }
-          : property
-      ))
       toast.success('Unit deleted permanently')
+      
+      // Recalculate property occupancy after deleting unit using setTimeout to ensure state is updated
+      setTimeout(() => recalculatePropertyOccupancy(unit.propertyId), 0)
     }
   }
 
@@ -279,17 +290,13 @@ export function DataProvider({ children }: DataProviderProps) {
         : unit
     ))
     
-    // Update property occupied units count
+    toast.success('Tenancy created successfully')
+    
+    // Recalculate property occupancy after adding tenancy using setTimeout to ensure state is updated
     const unit = units.find(u => u.id === tenancyData.unitId)
     if (unit) {
-      setProperties(prev => prev.map(property => 
-        property.id === unit.propertyId
-          ? { ...property, occupiedUnits: property.occupiedUnits + 1, updatedAt: getCurrentTimestamp() }
-          : property
-      ))
+      setTimeout(() => recalculatePropertyOccupancy(unit.propertyId), 0)
     }
-    
-    toast.success('Tenancy created successfully')
   }
 
   const updateTenancy = (id: string, updates: Partial<Tenancy>) => {
@@ -313,17 +320,13 @@ export function DataProvider({ children }: DataProviderProps) {
           : unit
       ))
       
-      // Update property occupied units count
+      toast.success('Tenancy archived')
+      
+      // Recalculate property occupancy after archiving tenancy using setTimeout to ensure state is updated
       const unit = units.find(u => u.id === tenancy.unitId)
       if (unit) {
-        setProperties(prev => prev.map(property => 
-          property.id === unit.propertyId
-            ? { ...property, occupiedUnits: Math.max(0, property.occupiedUnits - 1), updatedAt: getCurrentTimestamp() }
-            : property
-        ))
+        setTimeout(() => recalculatePropertyOccupancy(unit.propertyId), 0)
       }
-      
-      toast.success('Tenancy archived')
     }
   }
 
@@ -345,14 +348,10 @@ export function DataProvider({ children }: DataProviderProps) {
           : unit
       ))
       
-      // Update property occupied units count
+      // Recalculate property occupancy after restoring tenancy using setTimeout to ensure state is updated
       const unit = units.find(u => u.id === tenancy.unitId)
       if (unit) {
-        setProperties(prev => prev.map(property => 
-          property.id === unit.propertyId
-            ? { ...property, occupiedUnits: property.occupiedUnits + 1, updatedAt: getCurrentTimestamp() }
-            : property
-        ))
+        setTimeout(() => recalculatePropertyOccupancy(unit.propertyId), 0)
       }
     }
   }
@@ -369,17 +368,13 @@ export function DataProvider({ children }: DataProviderProps) {
           : unit
       ))
       
-      // Update property occupied units count
+      toast.success('Tenancy moved to recycle bin')
+      
+      // Recalculate property occupancy after soft deleting tenancy using setTimeout to ensure state is updated
       const unit = units.find(u => u.id === tenancy.unitId)
       if (unit) {
-        setProperties(prev => prev.map(property => 
-          property.id === unit.propertyId
-            ? { ...property, occupiedUnits: Math.max(0, property.occupiedUnits - 1), updatedAt: getCurrentTimestamp() }
-            : property
-        ))
+        setTimeout(() => recalculatePropertyOccupancy(unit.propertyId), 0)
       }
-      
-      toast.success('Tenancy moved to recycle bin')
     }
   }
 
@@ -395,17 +390,13 @@ export function DataProvider({ children }: DataProviderProps) {
           : unit
       ))
       
-      // Update property occupied units count
+      toast.success('Tenancy deleted permanently')
+      
+      // Recalculate property occupancy after deleting tenancy using setTimeout to ensure state is updated
       const unit = units.find(u => u.id === tenancy.unitId)
       if (unit) {
-        setProperties(prev => prev.map(property => 
-          property.id === unit.propertyId
-            ? { ...property, occupiedUnits: Math.max(0, property.occupiedUnits - 1), updatedAt: getCurrentTimestamp() }
-            : property
-        ))
+        setTimeout(() => recalculatePropertyOccupancy(unit.propertyId), 0)
       }
-      
-      toast.success('Tenancy deleted permanently')
     }
   }
 

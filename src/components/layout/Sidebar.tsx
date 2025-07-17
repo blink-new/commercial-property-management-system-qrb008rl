@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Building2, Home, Users, Archive, BarChart3, Menu, X, Zap, Calendar, Wrench, Shield } from 'lucide-react'
+import { Building2, Home, Users, Archive, BarChart3, Menu, X, Zap, Calendar, Wrench, Shield, Trash2 } from 'lucide-react'
 import { Button } from '../ui/button'
 import { cn } from '../../lib/utils'
 
@@ -18,6 +18,7 @@ const navigation = [
   { id: 'insurance', name: 'Insurance', icon: Shield },
   { id: 'epc', name: 'EPC Manager', icon: Zap },
   { id: 'archive', name: 'Archive', icon: Archive },
+  { id: 'recycle-bin', name: 'Recycle Bin', icon: Trash2 },
 ]
 
 export function Sidebar({ activeTab, onTabChange }: SidebarProps) {

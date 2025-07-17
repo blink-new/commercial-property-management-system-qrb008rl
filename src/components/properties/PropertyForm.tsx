@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { X, Upload, Image } from 'lucide-react'
+import { X, Upload, Image, Plus, Trash2 } from 'lucide-react'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
 import { Label } from '../ui/label'
@@ -44,10 +44,13 @@ export function PropertyForm({ isOpen, onClose, property }: PropertyFormProps) {
     totalUnits: 0,
     occupiedUnits: 0,
     description: '',
+    propertyDescription: '',
+    locationDescription: '',
     purchasePrice: undefined,
     currentValue: undefined,
     purchaseDate: '',
     photoUrl: '',
+    photoGallery: [],
     status: 'active',
     tenure: undefined,
     valuationDate: '',
@@ -57,6 +60,8 @@ export function PropertyForm({ isOpen, onClose, property }: PropertyFormProps) {
   })
   const [photoFile, setPhotoFile] = useState<File | null>(null)
   const [photoPreview, setPhotoPreview] = useState<string>('')
+  const [galleryFiles, setGalleryFiles] = useState<File[]>([])
+  const [galleryPreviews, setGalleryPreviews] = useState<string[]>([])
 
   useEffect(() => {
     if (property) {
@@ -67,10 +72,13 @@ export function PropertyForm({ isOpen, onClose, property }: PropertyFormProps) {
         totalUnits: property.totalUnits,
         occupiedUnits: property.occupiedUnits,
         description: property.description || '',
+        propertyDescription: property.propertyDescription || '',
+        locationDescription: property.locationDescription || '',
         purchasePrice: property.purchasePrice,
         currentValue: property.currentValue,
         purchaseDate: property.purchaseDate || '',
         photoUrl: property.photoUrl || '',
+        photoGallery: property.photoGallery || [],
         status: property.status,
         tenure: property.tenure,
         valuationDate: property.valuationDate || '',
@@ -79,6 +87,7 @@ export function PropertyForm({ isOpen, onClose, property }: PropertyFormProps) {
         propertyManager: property.propertyManager || ''
       })
       setPhotoPreview(property.photoUrl || '')
+      setGalleryPreviews(property.photoGallery || [])
     } else {
       setFormData({
         name: '',
@@ -87,10 +96,13 @@ export function PropertyForm({ isOpen, onClose, property }: PropertyFormProps) {
         totalUnits: 0,
         occupiedUnits: 0,
         description: '',
+        propertyDescription: '',
+        locationDescription: '',
         purchasePrice: undefined,
         currentValue: undefined,
         purchaseDate: '',
         photoUrl: '',
+        photoGallery: [],
         status: 'active',
         tenure: undefined,
         valuationDate: '',
@@ -99,17 +111,24 @@ export function PropertyForm({ isOpen, onClose, property }: PropertyFormProps) {
         propertyManager: ''
       })
       setPhotoPreview('')
+      setGalleryPreviews([])
     }
     setPhotoFile(null)
+    setGalleryFiles([])
   }, [property, isOpen])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     
+    const finalFormData = {
+      ...formData,
+      photoGallery: galleryPreviews
+    }
+    
     if (property) {
-      updateProperty(property.id, formData)
+      updateProperty(property.id, finalFormData)
     } else {
-      addProperty(formData)
+      addProperty(finalFormData)
     }
     
     onClose()
@@ -137,6 +156,29 @@ export function PropertyForm({ isOpen, onClose, property }: PropertyFormProps) {
     setPhotoFile(null)
     setPhotoPreview('')
     setFormData(prev => ({ ...prev, photoUrl: '' }))
+  }
+
+  const handleGalleryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || [])
+    if (files.length === 0) return
+
+    const newFiles = [...galleryFiles, ...files]
+    setGalleryFiles(newFiles)
+
+    // Create previews for new files
+    files.forEach(file => {
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        const result = e.target?.result as string
+        setGalleryPreviews(prev => [...prev, result])
+      }
+      reader.readAsDataURL(file)
+    })
+  }
+
+  const removeGalleryImage = (index: number) => {
+    setGalleryPreviews(prev => prev.filter((_, i) => i !== index))
+    setGalleryFiles(prev => prev.filter((_, i) => i !== index))
   }
 
   return (
@@ -302,7 +344,7 @@ export function PropertyForm({ isOpen, onClose, property }: PropertyFormProps) {
             <div className="space-y-2">
               <Label htmlFor="tenure">Tenure</Label>
               <Select
-                value={formData.tenure || ''}
+                value={formData.tenure || undefined}
                 onValueChange={(value: 'freehold' | 'leasehold') => handleInputChange('tenure', value || undefined)}
               >
                 <SelectTrigger>
@@ -351,6 +393,28 @@ export function PropertyForm({ isOpen, onClose, property }: PropertyFormProps) {
           </div>
 
           <div className="space-y-2">
+            <Label htmlFor="propertyDescription">Property Description (Optional)</Label>
+            <Textarea
+              id="propertyDescription"
+              value={formData.propertyDescription}
+              onChange={(e) => handleInputChange('propertyDescription', e.target.value)}
+              placeholder="Enter detailed property description..."
+              rows={4}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="locationDescription">Location Description (Optional)</Label>
+            <Textarea
+              id="locationDescription"
+              value={formData.locationDescription}
+              onChange={(e) => handleInputChange('locationDescription', e.target.value)}
+              placeholder="Enter location description..."
+              rows={4}
+            />
+          </div>
+
+          <div className="space-y-2">
             <Label htmlFor="photo">Property Photo</Label>
             <div className="space-y-4">
               {photoPreview ? (
@@ -388,7 +452,7 @@ export function PropertyForm({ isOpen, onClose, property }: PropertyFormProps) {
                   className="flex items-center space-x-2"
                 >
                   <Upload className="h-4 w-4" />
-                  <span>{photoPreview ? 'Change Photo' : 'Upload Photo'}</span>
+                  <span>{photoPreview ? 'Change Cover Photo' : 'Upload Cover Photo'}</span>
                 </Button>
                 <input
                   id="photo-upload"
@@ -398,6 +462,58 @@ export function PropertyForm({ isOpen, onClose, property }: PropertyFormProps) {
                   className="hidden"
                 />
               </div>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="gallery">Photo Gallery (Optional)</Label>
+            <div className="space-y-4">
+              {galleryPreviews.length > 0 && (
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {galleryPreviews.map((preview, index) => (
+                    <div key={index} className="relative group">
+                      <img
+                        src={preview}
+                        alt={`Gallery ${index + 1}`}
+                        className="w-full h-32 object-cover rounded-lg border border-gray-200"
+                      />
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="sm"
+                        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={() => removeGalleryImage(index)}
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              
+              <div className="flex items-center space-x-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => document.getElementById('gallery-upload')?.click()}
+                  className="flex items-center space-x-2"
+                >
+                  <Plus className="h-4 w-4" />
+                  <span>Add Photos to Gallery</span>
+                </Button>
+                <input
+                  id="gallery-upload"
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handleGalleryChange}
+                  className="hidden"
+                />
+              </div>
+              
+              <p className="text-xs text-gray-500">
+                You can select multiple photos at once. These will be displayed in a scrollable gallery.
+              </p>
             </div>
           </div>
 

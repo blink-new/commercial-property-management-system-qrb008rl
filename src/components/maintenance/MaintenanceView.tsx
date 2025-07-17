@@ -113,7 +113,7 @@ export function MaintenanceView({ searchValue }: MaintenanceViewProps) {
         </div>
         <Button onClick={() => setShowForm(true)} className="bg-blue-600 hover:bg-blue-700">
           <Plus className="h-4 w-4 mr-2" />
-          Report Issue
+          Log Issue
         </Button>
       </div>
 
@@ -233,7 +233,7 @@ export function MaintenanceView({ searchValue }: MaintenanceViewProps) {
               {!searchValue && (
                 <Button onClick={() => setShowForm(true)} className="bg-blue-600 hover:bg-blue-700">
                   <Plus className="h-4 w-4 mr-2" />
-                  Report Issue
+                  Log Issue
                 </Button>
               )}
             </CardContent>

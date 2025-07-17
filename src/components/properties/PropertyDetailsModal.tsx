@@ -1,4 +1,5 @@
-import { X, Building2, MapPin, Calendar, PoundSterling, Users, Home, FileText } from 'lucide-react'
+import { X, Building2, MapPin, Calendar, PoundSterling, Users, Home, FileText, ChevronLeft, ChevronRight } from 'lucide-react'
+import { useState } from 'react'
 import { Button } from '../ui/button'
 import { Badge } from '../ui/badge'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog'
@@ -13,6 +14,7 @@ interface PropertyDetailsModalProps {
 
 export function PropertyDetailsModal({ property, isOpen, onClose }: PropertyDetailsModalProps) {
   const { getUnitsForProperty, getTenanciesForUnit, getAnnualRentForProperty } = useData()
+  const [currentGalleryIndex, setCurrentGalleryIndex] = useState(0)
 
   if (!property) return null
 
@@ -45,6 +47,22 @@ export function PropertyDetailsModal({ property, isOpen, onClose }: PropertyDeta
         return 'bg-orange-100 text-orange-800'
       default:
         return 'bg-gray-100 text-gray-800'
+    }
+  }
+
+  const nextGalleryImage = () => {
+    if (property.photoGallery && property.photoGallery.length > 0) {
+      setCurrentGalleryIndex((prev) => 
+        prev === property.photoGallery!.length - 1 ? 0 : prev + 1
+      )
+    }
+  }
+
+  const prevGalleryImage = () => {
+    if (property.photoGallery && property.photoGallery.length > 0) {
+      setCurrentGalleryIndex((prev) => 
+        prev === 0 ? property.photoGallery!.length - 1 : prev - 1
+      )
     }
   }
 

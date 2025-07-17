@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { useData } from '../../context/DataContext'
 import { MaintenanceIssue, MaintenanceComment, MaintenanceAttachment } from '../../types'
 import { formatCurrency } from '../../types'
-import toast from 'react-hot-toast'
+import { toast } from 'react-hot-toast'
 
 interface MaintenanceDetailsModalProps {
   issue: MaintenanceIssue

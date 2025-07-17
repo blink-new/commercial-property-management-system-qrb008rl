@@ -2,7 +2,7 @@ import React, { createContext, useContext, ReactNode, useEffect } from 'react'
 import { useLocalStorage } from '../hooks/useLocalStorage'
 import { Property, Unit, Tenancy, EPCData, MaintenanceIssue, InsurancePolicy, PropertyFormData, UnitFormData, TenancyFormData, EPCFormData, MaintenanceFormData, InsuranceFormData } from '../types'
 import { generateSampleData } from '../utils/sampleData'
-import toast from 'react-hot-toast'
+import { toast } from 'react-hot-toast'
 
 interface DataContextType {
   // Properties
@@ -12,6 +12,7 @@ interface DataContextType {
   archiveProperty: (id: string) => void
   restoreProperty: (id: string) => void
   deleteProperty: (id: string) => void
+  softDeleteProperty: (id: string) => void // New: Move to recycle bin
 
   // Units
   units: Unit[]
@@ -20,6 +21,7 @@ interface DataContextType {
   archiveUnit: (id: string) => void
   restoreUnit: (id: string) => void
   deleteUnit: (id: string) => void
+  softDeleteUnit: (id: string) => void // New: Move to recycle bin
 
   // Tenancies
   tenancies: Tenancy[]
@@ -28,6 +30,7 @@ interface DataContextType {
   archiveTenancy: (id: string) => void
   restoreTenancy: (id: string) => void
   deleteTenancy: (id: string) => void
+  softDeleteTenancy: (id: string) => void // New: Move to recycle bin
 
   // EPC Data
   epcData: EPCData[]
@@ -130,8 +133,19 @@ export function DataProvider({ children }: DataProviderProps) {
   }
 
   const restoreProperty = (id: string) => {
-    updateProperty(id, { isArchived: false })
-    toast.success('Property restored')
+    const property = properties.find(p => p.id === id)
+    if (property?.isDeleted) {
+      updateProperty(id, { isDeleted: false, deletedAt: undefined })
+      toast.success('Property restored from recycle bin')
+    } else {
+      updateProperty(id, { isArchived: false })
+      toast.success('Property restored from archive')
+    }
+  }
+
+  const softDeleteProperty = (id: string) => {
+    updateProperty(id, { isDeleted: true, deletedAt: getCurrentTimestamp() })
+    toast.success('Property moved to recycle bin')
   }
 
   const deleteProperty = (id: string) => {
@@ -182,8 +196,19 @@ export function DataProvider({ children }: DataProviderProps) {
   }
 
   const restoreUnit = (id: string) => {
-    updateUnit(id, { isArchived: false })
-    toast.success('Unit restored')
+    const unit = units.find(u => u.id === id)
+    if (unit?.isDeleted) {
+      updateUnit(id, { isDeleted: false, deletedAt: undefined })
+      toast.success('Unit restored from recycle bin')
+    } else {
+      updateUnit(id, { isArchived: false })
+      toast.success('Unit restored from archive')
+    }
+  }
+
+  const softDeleteUnit = (id: string) => {
+    updateUnit(id, { isDeleted: true, deletedAt: getCurrentTimestamp() })
+    toast.success('Unit moved to recycle bin')
   }
 
   const deleteUnit = (id: string) => {
@@ -272,7 +297,13 @@ export function DataProvider({ children }: DataProviderProps) {
   const restoreTenancy = (id: string) => {
     const tenancy = tenancies.find(t => t.id === id)
     if (tenancy) {
-      updateTenancy(id, { isArchived: false, status: 'active' })
+      if (tenancy.isDeleted) {
+        updateTenancy(id, { isDeleted: false, deletedAt: undefined, status: 'active' })
+        toast.success('Tenancy restored from recycle bin')
+      } else {
+        updateTenancy(id, { isArchived: false, status: 'active' })
+        toast.success('Tenancy restored from archive')
+      }
       
       // Update unit status to occupied
       setUnits(prev => prev.map(unit => 
@@ -290,8 +321,32 @@ export function DataProvider({ children }: DataProviderProps) {
             : property
         ))
       }
+    }
+  }
+
+  const softDeleteTenancy = (id: string) => {
+    const tenancy = tenancies.find(t => t.id === id)
+    if (tenancy) {
+      updateTenancy(id, { isDeleted: true, deletedAt: getCurrentTimestamp(), status: 'terminated' })
       
-      toast.success('Tenancy restored')
+      // Update unit status to vacant
+      setUnits(prev => prev.map(unit => 
+        unit.id === tenancy.unitId
+          ? { ...unit, status: 'vacant', updatedAt: getCurrentTimestamp() }
+          : unit
+      ))
+      
+      // Update property occupied units count
+      const unit = units.find(u => u.id === tenancy.unitId)
+      if (unit) {
+        setProperties(prev => prev.map(property => 
+          property.id === unit.propertyId
+            ? { ...property, occupiedUnits: Math.max(0, property.occupiedUnits - 1), updatedAt: getCurrentTimestamp() }
+            : property
+        ))
+      }
+      
+      toast.success('Tenancy moved to recycle bin')
     }
   }
 
@@ -372,7 +427,7 @@ export function DataProvider({ children }: DataProviderProps) {
       updatedAt: getCurrentTimestamp(),
     }
     setMaintenanceIssues(prev => [...prev, newMaintenance])
-    toast.success('Maintenance issue reported successfully')
+    toast.success('Maintenance issue logged successfully')
   }
 
   const updateMaintenanceIssue = (id: string, updates: Partial<MaintenanceIssue>) => {
@@ -485,18 +540,21 @@ export function DataProvider({ children }: DataProviderProps) {
     archiveProperty,
     restoreProperty,
     deleteProperty,
+    softDeleteProperty,
     units,
     addUnit,
     updateUnit,
     archiveUnit,
     restoreUnit,
     deleteUnit,
+    softDeleteUnit,
     tenancies,
     addTenancy,
     updateTenancy,
     archiveTenancy,
     restoreTenancy,
     deleteTenancy,
+    softDeleteTenancy,
     epcData,
     addEPCData,
     updateEPCData,

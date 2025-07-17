@@ -10,7 +10,7 @@ import { Switch } from '../ui/switch'
 import { Checkbox } from '../ui/checkbox'
 import { useData } from '../../context/DataContext'
 import { InsuranceFormData } from '../../types'
-import toast from 'react-hot-toast'
+import { toast } from 'react-hot-toast'
 
 interface InsuranceFormProps {
   onClose: () => void
@@ -31,6 +31,11 @@ export function InsuranceForm({ onClose }: InsuranceFormProps) {
     expiryDate: '',
     annualPremium: 0,
     sumInsured: 0,
+    lossOfRent: {
+      amount: 0,
+      years: 1
+    },
+    comments: '',
     diarySettings: {
       enabled: true,
       daysBefore: 30
@@ -273,6 +278,74 @@ export function InsuranceForm({ onClose }: InsuranceFormProps) {
                 />
                 <p className="text-xs text-gray-500">Building Declared Value (BDV)</p>
               </div>
+            </div>
+
+            {/* Loss of Rent (Buildings Insurance Only) */}
+            {formData.policyType === 'buildings' && (
+              <div className="space-y-4 p-4 bg-blue-50 rounded-lg">
+                <Label className="text-base font-medium">Loss of Rent (Optional)</Label>
+                <p className="text-sm text-gray-600">Specify the loss of rent coverage for buildings insurance</p>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="lossOfRentAmount">Amount (£)</Label>
+                    <Input
+                      id="lossOfRentAmount"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={formData.lossOfRent?.amount || 0}
+                      onChange={(e) => setFormData(prev => ({ 
+                        ...prev, 
+                        lossOfRent: {
+                          ...prev.lossOfRent!,
+                          amount: parseFloat(e.target.value) || 0
+                        }
+                      }))}
+                      placeholder="0.00"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="lossOfRentYears">Number of Years</Label>
+                    <Select 
+                      value={formData.lossOfRent?.years.toString() || '1'} 
+                      onValueChange={(value) => 
+                        setFormData(prev => ({
+                          ...prev,
+                          lossOfRent: {
+                            ...prev.lossOfRent!,
+                            years: parseInt(value)
+                          }
+                        }))
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="1">1 year</SelectItem>
+                        <SelectItem value="2">2 years</SelectItem>
+                        <SelectItem value="3">3 years</SelectItem>
+                        <SelectItem value="4">4 years</SelectItem>
+                        <SelectItem value="5">5 years</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Comments */}
+            <div className="space-y-2">
+              <Label htmlFor="comments">Comments (Optional)</Label>
+              <Textarea
+                id="comments"
+                value={formData.comments || ''}
+                onChange={(e) => setFormData(prev => ({ ...prev, comments: e.target.value || undefined }))}
+                placeholder="Additional notes or comments about this insurance policy..."
+                rows={3}
+              />
             </div>
 
             {/* Diary Reminder Settings */}

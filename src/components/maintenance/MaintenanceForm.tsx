@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../ui/card'
 import { Switch } from '../ui/switch'
 import { useData } from '../../context/DataContext'
 import { MaintenanceFormData } from '../../types'
-import toast from 'react-hot-toast'
+import { toast } from 'react-hot-toast'
 
 interface MaintenanceFormProps {
   onClose: () => void
@@ -64,7 +64,7 @@ export function MaintenanceForm({ onClose }: MaintenanceFormProps) {
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-          <CardTitle>Report Maintenance Issue</CardTitle>
+          <CardTitle>Log Maintenance Issue</CardTitle>
           <Button variant="ghost" size="sm" onClick={onClose}>
             <X className="h-4 w-4" />
           </Button>
@@ -93,15 +93,15 @@ export function MaintenanceForm({ onClose }: MaintenanceFormProps) {
               <div className="space-y-2">
                 <Label htmlFor="unit">Unit (Optional)</Label>
                 <Select 
-                  value={formData.unitId || ''} 
-                  onValueChange={(value) => setFormData(prev => ({ ...prev, unitId: value || undefined }))}
+                  value={formData.unitId || 'none'} 
+                  onValueChange={(value) => setFormData(prev => ({ ...prev, unitId: value === 'none' ? undefined : value }))}
                   disabled={!formData.propertyId}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select unit" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">No specific unit</SelectItem>
+                    <SelectItem value="none">No specific unit</SelectItem>
                     {availableUnits.map((unit) => (
                       <SelectItem key={unit.id} value={unit.id}>
                         Unit {unit.unitNumber}
@@ -305,7 +305,7 @@ export function MaintenanceForm({ onClose }: MaintenanceFormProps) {
                 Cancel
               </Button>
               <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
-                Report Issue
+                Log Issue
               </Button>
             </div>
           </form>

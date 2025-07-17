@@ -7,10 +7,13 @@ export interface Property {
   totalUnits: number
   occupiedUnits: number
   description?: string
+  propertyDescription?: string // New: Long text property description
+  locationDescription?: string // New: Long text location description
   purchasePrice?: number
   currentValue?: number
   purchaseDate?: string
-  photoUrl?: string
+  photoUrl?: string // Cover photo
+  photoGallery?: string[] // New: Array of photo URLs for gallery
   status: 'active' | 'inactive'
   // New property fields
   tenure?: 'freehold' | 'leasehold'
@@ -19,6 +22,8 @@ export interface Property {
   titleNumber?: string
   propertyManager?: string
   isArchived: boolean
+  isDeleted?: boolean // New: For recycle bin
+  deletedAt?: string // New: When item was deleted
   createdAt: string
   updatedAt: string
 }
@@ -42,6 +47,8 @@ export interface Unit {
   rateableValue?: number
   ratesPayable?: number
   isArchived: boolean
+  isDeleted?: boolean // New: For recycle bin
+  deletedAt?: string // New: When item was deleted
   createdAt: string
   updatedAt: string
 }
@@ -76,6 +83,8 @@ export interface Tenancy {
     tenancyBreak?: { enabled: boolean; monthsBefore: number }
   }
   isArchived: boolean
+  isDeleted?: boolean // New: For recycle bin
+  deletedAt?: string // New: When item was deleted
   createdAt: string
   updatedAt: string
 }
@@ -90,6 +99,8 @@ export interface EPCData {
   validUntil?: string
   notes?: string
   isArchived: boolean
+  isDeleted?: boolean // New: For recycle bin
+  deletedAt?: string // New: When item was deleted
   createdAt: string
   updatedAt: string
 }
@@ -109,6 +120,8 @@ export interface DiaryEvent {
   comments?: string
   status?: 'vacating' | 'in_talks_directly' | 'in_negotiations' | 'in_legals' | 'pending'
   isArchived: boolean
+  isDeleted?: boolean // New: For recycle bin
+  deletedAt?: string // New: When item was deleted
   createdAt: string
   updatedAt: string
 }
@@ -135,6 +148,8 @@ export interface MaintenanceIssue {
     daysBefore: number
   }
   isArchived: boolean
+  isDeleted?: boolean // New: For recycle bin
+  deletedAt?: string // New: When item was deleted
   createdAt: string
   updatedAt: string
 }
@@ -169,12 +184,20 @@ export interface InsurancePolicy {
   expiryDate: string
   annualPremium: number
   sumInsured: number // BDV - Building Declared Value
+  // Loss of rent for buildings insurance (optional)
+  lossOfRent?: {
+    amount: number // Amount in GBP
+    years: number // Number of years
+  }
+  comments?: string // Comments for all insurance types
   documents: InsuranceDocument[]
   diarySettings?: {
     enabled: boolean
     daysBefore: number
   }
   isArchived: boolean
+  isDeleted?: boolean // New: For recycle bin
+  deletedAt?: string // New: When item was deleted
   createdAt: string
   updatedAt: string
 }

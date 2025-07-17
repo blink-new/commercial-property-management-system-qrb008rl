@@ -347,7 +347,7 @@ export function TenancyForm({ isOpen, onClose, tenancy }: TenancyFormProps) {
               <div className="space-y-2">
                 <Label htmlFor="insideAct">Inside of the Act</Label>
                 <Select
-                  value={formData.insideAct || ''}
+                  value={formData.insideAct || undefined}
                   onValueChange={(value: 'yes' | 'no' | 'na_scotland') => handleInputChange('insideAct', value || undefined)}
                 >
                   <SelectTrigger>
@@ -366,7 +366,7 @@ export function TenancyForm({ isOpen, onClose, tenancy }: TenancyFormProps) {
               <div className="space-y-2">
                 <Label htmlFor="repairingObligation">Repairing Obligation</Label>
                 <Select
-                  value={formData.repairingObligation || ''}
+                  value={formData.repairingObligation || undefined}
                   onValueChange={(value: 'fri' | 'iri') => handleInputChange('repairingObligation', value || undefined)}
                 >
                   <SelectTrigger>
@@ -402,7 +402,7 @@ export function TenancyForm({ isOpen, onClose, tenancy }: TenancyFormProps) {
               <div className="space-y-2">
                 <Label htmlFor="breakType">Break Type</Label>
                 <Select
-                  value={formData.breakType || ''}
+                  value={formData.breakType || undefined}
                   onValueChange={(value: 'mutual' | 'landlord_only' | 'tenant_only') => handleInputChange('breakType', value || undefined)}
                 >
                   <SelectTrigger>
@@ -471,7 +471,7 @@ export function TenancyForm({ isOpen, onClose, tenancy }: TenancyFormProps) {
               <div className="space-y-2">
                 <Label htmlFor="rentReviewType">Rent Review Type</Label>
                 <Select
-                  value={formData.rentReviewType || ''}
+                  value={formData.rentReviewType || undefined}
                   onValueChange={(value: 'fixed' | 'indexed_rpi' | 'indexed_cpi' | 'open_market' | 'upwards_only_open_market') => handleInputChange('rentReviewType', value || undefined)}
                 >
                   <SelectTrigger>

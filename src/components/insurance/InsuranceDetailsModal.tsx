@@ -3,6 +3,7 @@ import { X, Edit, Archive, Upload, Download, Trash2, Building2, Shield, Calendar
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
 import { Label } from '../ui/label'
+import { Textarea } from '../ui/textarea'
 import { Badge } from '../ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card'
 import { Separator } from '../ui/separator'
@@ -11,7 +12,7 @@ import { Checkbox } from '../ui/checkbox'
 import { useData } from '../../context/DataContext'
 import { InsurancePolicy, InsuranceDocument } from '../../types'
 import { formatCurrency } from '../../types'
-import toast from 'react-hot-toast'
+import { toast } from 'react-hot-toast'
 
 interface InsuranceDetailsModalProps {
   policy: InsurancePolicy
@@ -32,7 +33,10 @@ export function InsuranceDetailsModal({ policy, onClose }: InsuranceDetailsModal
     startDate: policy.startDate,
     expiryDate: policy.expiryDate,
     annualPremium: policy.annualPremium.toString(),
-    sumInsured: policy.sumInsured.toString()
+    sumInsured: policy.sumInsured.toString(),
+    lossOfRentAmount: policy.lossOfRent?.amount?.toString() || '0',
+    lossOfRentYears: policy.lossOfRent?.years?.toString() || '1',
+    comments: policy.comments || ''
   })
 
   const activeProperties = properties.filter(p => !p.isArchived)
@@ -49,7 +53,12 @@ export function InsuranceDetailsModal({ policy, onClose }: InsuranceDetailsModal
       startDate: editData.startDate,
       expiryDate: editData.expiryDate,
       annualPremium: parseFloat(editData.annualPremium) || 0,
-      sumInsured: parseFloat(editData.sumInsured) || 0
+      sumInsured: parseFloat(editData.sumInsured) || 0,
+      lossOfRent: policy.policyType === 'buildings' && (parseFloat(editData.lossOfRentAmount) > 0) ? {
+        amount: parseFloat(editData.lossOfRentAmount) || 0,
+        years: parseInt(editData.lossOfRentYears) || 1
+      } : undefined,
+      comments: editData.comments || undefined
     }
 
     updateInsurancePolicy(policy.id, updates)
@@ -306,6 +315,79 @@ export function InsuranceDetailsModal({ policy, onClose }: InsuranceDetailsModal
                   </div>
                 ))}
               </div>
+            )}
+          </div>
+
+          {/* Loss of Rent (Buildings Insurance Only) */}
+          {policy.policyType === 'buildings' && (
+            <>
+              <Separator />
+              <div>
+                <Label className="text-sm font-medium text-gray-500 mb-3 block">Loss of Rent Coverage</Label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-xs text-gray-400">Amount (£)</Label>
+                    {isEditing ? (
+                      <Input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={editData.lossOfRentAmount}
+                        onChange={(e) => setEditData(prev => ({ ...prev, lossOfRentAmount: e.target.value }))}
+                        className="mt-1"
+                        placeholder="0.00"
+                      />
+                    ) : (
+                      <p className="text-sm mt-1">
+                        {policy.lossOfRent?.amount ? formatCurrency(policy.lossOfRent.amount) : 'Not specified'}
+                      </p>
+                    )}
+                  </div>
+                  
+                  <div>
+                    <Label className="text-xs text-gray-400">Coverage Period</Label>
+                    {isEditing ? (
+                      <Select 
+                        value={editData.lossOfRentYears} 
+                        onValueChange={(value) => setEditData(prev => ({ ...prev, lossOfRentYears: value }))}
+                      >
+                        <SelectTrigger className="mt-1">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="1">1 year</SelectItem>
+                          <SelectItem value="2">2 years</SelectItem>
+                          <SelectItem value="3">3 years</SelectItem>
+                          <SelectItem value="4">4 years</SelectItem>
+                          <SelectItem value="5">5 years</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <p className="text-sm mt-1">
+                        {policy.lossOfRent?.years ? `${policy.lossOfRent.years} year${policy.lossOfRent.years > 1 ? 's' : ''}` : 'Not specified'}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* Comments */}
+          <Separator />
+          <div>
+            <Label className="text-sm font-medium text-gray-500 mb-3 block">Comments</Label>
+            {isEditing ? (
+              <Textarea
+                value={editData.comments}
+                onChange={(e) => setEditData(prev => ({ ...prev, comments: e.target.value }))}
+                placeholder="Additional notes or comments about this insurance policy..."
+                rows={3}
+              />
+            ) : (
+              <p className="text-sm whitespace-pre-wrap">
+                {policy.comments || 'No comments'}
+              </p>
             )}
           </div>
 

@@ -10,9 +10,10 @@ import { MaintenanceView } from './components/maintenance/MaintenanceView'
 import { InsuranceView } from './components/insurance/InsuranceView'
 import { EPCView } from './components/epc/EPCView'
 import { ArchiveView } from './components/archive/ArchiveView'
+import { RecycleBinView } from './components/recycle-bin/RecycleBinView'
 import { DataProvider } from './context/DataContext'
 import { blink } from './blink/client'
-import toast, { Toaster } from 'react-hot-toast'
+import { Toaster } from 'react-hot-toast'
 
 const getPageTitle = (activeTab: string) => {
   switch (activeTab) {
@@ -34,6 +35,8 @@ const getPageTitle = (activeTab: string) => {
       return 'EPC Manager'
     case 'archive':
       return 'Archive'
+    case 'recycle-bin':
+      return 'Recycle Bin'
     default:
       return 'Dashboard'
   }
@@ -73,6 +76,8 @@ function App() {
         return <EPCView searchValue={searchValue} />
       case 'archive':
         return <ArchiveView searchValue={searchValue} />
+      case 'recycle-bin':
+        return <RecycleBinView searchValue={searchValue} />
       default:
         return <Dashboard />
     }

@@ -13,7 +13,7 @@ interface TenancyCardProps {
 }
 
 export function TenancyCard({ tenancy, onEdit, onViewDetails, showArchived = false }: TenancyCardProps) {
-  const { archiveTenancy, restoreTenancy, deleteTenancy, getUnitById, getPropertyById } = useData()
+  const { archiveTenancy, restoreTenancy, softDeleteTenancy, getUnitById, getPropertyById } = useData()
   
   const unit = getUnitById(tenancy.unitId)
   const property = unit ? getPropertyById(unit.propertyId) : undefined
@@ -197,7 +197,7 @@ export function TenancyCard({ tenancy, onEdit, onViewDetails, showArchived = fal
               size="sm"
               onClick={(e) => {
                 e.stopPropagation()
-                deleteTenancy(tenancy.id)
+                softDeleteTenancy(tenancy.id)
               }}
               className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
             >

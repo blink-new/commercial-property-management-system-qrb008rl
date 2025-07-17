@@ -101,6 +101,28 @@ export function DataProvider({ children }: DataProviderProps) {
     }
   }, [properties.length, units.length, tenancies.length, setProperties, setUnits, setTenancies, setMaintenanceIssues, setInsurancePolicies])
 
+  // Utility function to recalculate property occupancy
+  const recalculatePropertyOccupancy = (propertyId: string) => {
+    const propertyUnits = units.filter(unit => 
+      unit.propertyId === propertyId && 
+      !unit.isArchived && 
+      !unit.isDeleted
+    )
+    
+    const occupiedUnits = propertyUnits.filter(unit => unit.status === 'occupied').length
+    
+    setProperties(prev => prev.map(property => 
+      property.id === propertyId
+        ? { 
+            ...property, 
+            totalUnits: propertyUnits.length,
+            occupiedUnits: occupiedUnits,
+            updatedAt: getCurrentTimestamp() 
+          }
+        : property
+    ))
+  }
+
   const generateId = () => `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
   const getCurrentTimestamp = () => new Date().toISOString()
 
@@ -199,6 +221,10 @@ export function DataProvider({ children }: DataProviderProps) {
     const unit = units.find(u => u.id === id)
     if (unit?.isDeleted) {
       updateUnit(id, { isDeleted: false, deletedAt: undefined })
+      
+      // Recalculate property occupancy after unit restoration
+      recalculatePropertyOccupancy(unit.propertyId)
+      
       toast.success('Unit restored from recycle bin')
     } else {
       updateUnit(id, { isArchived: false })
@@ -207,8 +233,15 @@ export function DataProvider({ children }: DataProviderProps) {
   }
 
   const softDeleteUnit = (id: string) => {
-    updateUnit(id, { isDeleted: true, deletedAt: getCurrentTimestamp() })
-    toast.success('Unit moved to recycle bin')
+    const unit = units.find(u => u.id === id)
+    if (unit) {
+      updateUnit(id, { isDeleted: true, deletedAt: getCurrentTimestamp() })
+      
+      // Recalculate property occupancy after unit deletion
+      recalculatePropertyOccupancy(unit.propertyId)
+      
+      toast.success('Unit moved to recycle bin')
+    }
   }
 
   const deleteUnit = (id: string) => {
@@ -495,11 +528,11 @@ export function DataProvider({ children }: DataProviderProps) {
 
   // Utility functions
   const getUnitsForProperty = (propertyId: string) => {
-    return units.filter(unit => unit.propertyId === propertyId)
+    return units.filter(unit => unit.propertyId === propertyId && !unit.isDeleted)
   }
 
   const getTenanciesForUnit = (unitId: string) => {
-    return tenancies.filter(tenancy => tenancy.unitId === unitId)
+    return tenancies.filter(tenancy => tenancy.unitId === unitId && !tenancy.isDeleted)
   }
 
   const getEPCForUnit = (unitId: string) => {
@@ -515,14 +548,15 @@ export function DataProvider({ children }: DataProviderProps) {
   }
 
   const getAnnualRentForProperty = (propertyId: string) => {
-    const propertyUnits = units.filter(unit => unit.propertyId === propertyId && !unit.isArchived)
+    const propertyUnits = units.filter(unit => unit.propertyId === propertyId && !unit.isArchived && !unit.isDeleted)
     let totalAnnualRent = 0
     
     propertyUnits.forEach(unit => {
       const activeTenancies = tenancies.filter(
         tenancy => tenancy.unitId === unit.id && 
         tenancy.status === 'active' && 
-        !tenancy.isArchived
+        !tenancy.isArchived &&
+        !tenancy.isDeleted
       )
       
       activeTenancies.forEach(tenancy => {

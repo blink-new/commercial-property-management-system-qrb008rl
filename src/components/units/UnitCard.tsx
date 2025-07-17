@@ -13,7 +13,7 @@ interface UnitCardProps {
 }
 
 export function UnitCard({ unit, onEdit, onViewDetails, showArchived = false }: UnitCardProps) {
-  const { archiveUnit, restoreUnit, deleteUnit, getPropertyById, getTenanciesForUnit } = useData()
+  const { archiveUnit, restoreUnit, softDeleteUnit, getPropertyById, getTenanciesForUnit } = useData()
   
   const property = getPropertyById(unit.propertyId)
   const tenancies = getTenanciesForUnit(unit.id)
@@ -176,7 +176,7 @@ export function UnitCard({ unit, onEdit, onViewDetails, showArchived = false }: 
               size="sm"
               onClick={(e) => {
                 e.stopPropagation()
-                deleteUnit(unit.id)
+                softDeleteUnit(unit.id)
               }}
               className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
             >

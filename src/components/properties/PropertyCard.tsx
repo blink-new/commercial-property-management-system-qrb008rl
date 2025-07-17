@@ -13,7 +13,7 @@ interface PropertyCardProps {
 }
 
 export function PropertyCard({ property, onEdit, onViewDetails, showArchived = false }: PropertyCardProps) {
-  const { archiveProperty, restoreProperty, deleteProperty, getAnnualRentForProperty } = useData()
+  const { archiveProperty, restoreProperty, softDeleteProperty, getAnnualRentForProperty } = useData()
 
   const occupancyRate = property.totalUnits > 0 
     ? (property.occupiedUnits / property.totalUnits) * 100 
@@ -160,7 +160,7 @@ export function PropertyCard({ property, onEdit, onViewDetails, showArchived = f
               size="sm"
               onClick={(e) => {
                 e.stopPropagation()
-                deleteProperty(property.id)
+                softDeleteProperty(property.id)
               }}
               className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
             >

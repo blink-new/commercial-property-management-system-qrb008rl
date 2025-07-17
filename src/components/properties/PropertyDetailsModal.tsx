@@ -90,14 +90,88 @@ export function PropertyDetailsModal({ property, isOpen, onClose }: PropertyDeta
         </DialogHeader>
 
         <div className="space-y-6">
-          {/* Property Photo */}
-          {property.photoUrl && (
-            <div className="aspect-video w-full overflow-hidden rounded-lg border border-gray-200">
-              <img
-                src={property.photoUrl}
-                alt={property.name}
-                className="w-full h-full object-cover"
-              />
+          {/* Property Photos */}
+          {(property.photoUrl || (property.photoGallery && property.photoGallery.length > 0)) && (
+            <div className="space-y-4">
+              {/* Cover Photo */}
+              {property.photoUrl && (
+                <div>
+                  <h3 className="text-sm font-medium text-gray-600 mb-2">Cover Photo</h3>
+                  <div className="aspect-video w-full overflow-hidden rounded-lg border border-gray-200">
+                    <img
+                      src={property.photoUrl}
+                      alt={property.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Photo Gallery */}
+              {property.photoGallery && property.photoGallery.length > 0 && (
+                <div>
+                  <h3 className="text-sm font-medium text-gray-600 mb-2">
+                    Photo Gallery ({property.photoGallery.length} photos)
+                  </h3>
+                  <div className="relative">
+                    <div className="aspect-video w-full overflow-hidden rounded-lg border border-gray-200">
+                      <img
+                        src={property.photoGallery[currentGalleryIndex]}
+                        alt={`${property.name} - Photo ${currentGalleryIndex + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    
+                    {property.photoGallery.length > 1 && (
+                      <>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white"
+                          onClick={prevGalleryImage}
+                        >
+                          <ChevronLeft className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white"
+                          onClick={nextGalleryImage}
+                        >
+                          <ChevronRight className="h-4 w-4" />
+                        </Button>
+                        
+                        <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 bg-black/50 text-white px-2 py-1 rounded text-sm">
+                          {currentGalleryIndex + 1} / {property.photoGallery.length}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                  
+                  {/* Gallery Thumbnails */}
+                  {property.photoGallery.length > 1 && (
+                    <div className="flex space-x-2 mt-2 overflow-x-auto pb-2">
+                      {property.photoGallery.map((photo, index) => (
+                        <button
+                          key={index}
+                          onClick={() => setCurrentGalleryIndex(index)}
+                          className={`flex-shrink-0 w-16 h-16 rounded border-2 overflow-hidden ${
+                            index === currentGalleryIndex 
+                              ? 'border-blue-500' 
+                              : 'border-gray-200 hover:border-gray-300'
+                          }`}
+                        >
+                          <img
+                            src={photo}
+                            alt={`Thumbnail ${index + 1}`}
+                            className="w-full h-full object-cover"
+                          />
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
 
@@ -266,11 +340,29 @@ export function PropertyDetailsModal({ property, isOpen, onClose }: PropertyDeta
             </div>
           </div>
 
-          {/* Description */}
-          {property.description && (
-            <div className="space-y-2">
-              <h3 className="text-lg font-medium text-gray-900">Description</h3>
-              <p className="text-sm text-gray-700 leading-relaxed">{property.description}</p>
+          {/* Descriptions */}
+          {(property.description || property.propertyDescription || property.locationDescription) && (
+            <div className="space-y-4">
+              {property.description && (
+                <div className="space-y-2">
+                  <h3 className="text-lg font-medium text-gray-900">Description</h3>
+                  <p className="text-sm text-gray-700 leading-relaxed">{property.description}</p>
+                </div>
+              )}
+
+              {property.propertyDescription && (
+                <div className="space-y-2">
+                  <h3 className="text-lg font-medium text-gray-900">Property Description</h3>
+                  <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{property.propertyDescription}</p>
+                </div>
+              )}
+
+              {property.locationDescription && (
+                <div className="space-y-2">
+                  <h3 className="text-lg font-medium text-gray-900">Location Description</h3>
+                  <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{property.locationDescription}</p>
+                </div>
+              )}
             </div>
           )}
 
